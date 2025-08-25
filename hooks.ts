@@ -17,7 +17,7 @@ export const useAuth = () => {
       dispatch(setCredentials({ token: response.token, user: response.user }));
       return response;
     } catch (error) {
-      throw error;
+      throw error; 
     }
   };
 
