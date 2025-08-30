@@ -9,7 +9,7 @@ const getAuthToken = (): string | null => {
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://native-admin-dashboard-backend.onrender.com',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -268,5 +268,53 @@ export const fetchSubcategories = async () => {
     throw error;
   }
 };
+
+export const fetchBanners = async () => {
+  try {
+    const response = await api.get('/banner');
+    console.log("data", response.data)
+    return response.data?.banner || [];
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const addBannerData = async (formdata: FormData) => {
+  try {
+    const response = await api.post('/banner/add', formdata, {
+          headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data?.banner;
+  } catch (error) {
+    console.error('Error adding banner:', error);
+    throw error;
+  }
+}
+
+export const updateBannerData = async (id: string, formData: FormData) => {
+  try {
+    const response = await api.patch(`/banner/${id}`, formData, {
+        headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log("response from update banner", response)
+    return response.data?.data;
+  } catch (error) { 
+    console.error('Error updating banner:', error);
+    throw error;
+  }
+}
+
+export const deleteBannerData = async (id: string) => {
+  try {
+    await api.delete(`/banner/${id}`);
+  } catch (error) {
+    console.error('Error deleting banner:', error);
+    throw error;
+  }
+}
 
 export default api;
