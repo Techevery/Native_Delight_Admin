@@ -272,7 +272,6 @@ export const fetchSubcategories = async () => {
 export const fetchBanners = async () => {
   try {
     const response = await api.get('/banner');
-    console.log("data", response.data)
     return response.data?.banner || [];
   } catch (error) {
     throw error;

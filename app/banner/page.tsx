@@ -64,7 +64,6 @@ const Banner = () => {
       formData.append('image', newBannerImage);
 
       const response = await addBannerData(formData);
-      console.log("response from banner", response)
       setBanners([...banners, response]);
       toast.success('Banner added successfully!', {
         position: 'top-right',
