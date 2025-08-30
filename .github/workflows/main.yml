@@ -1,111 +1,75 @@
-
-name: CI Pipeline for Native Delight Server
-run-name: Build and Test by ${{ github.actor }} 🚀
+name: CI Pipeline for Native Delight Next.js Frontend
+run-name: Build and Deploy Frontend by ${{ github.actor }} 🚀
 
 on:
   push:
     branches:
-      - master
+      - master  # Change to 'master' if your branch is named that
   pull_request:
     branches:
-      - master
+      - master  # Change to 'master' if your branch is named that
 
 jobs:
-  build-and-test-backend:
+  build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend  # Assumes backend repo is in a subfolder
+        working-directory: ./  # Change to './admin' if Next.js is in a subfolder
     env:
       NODE_VERSION: '20'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Verify package-lock.json
-        run: 'test -f package-lock.json || echo "Warning: package-lock.json not found, caching may not work"'
-        shell: bash
-        continue-on-error: true
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: TypeScript type check
-        run: npm run type-check
-      - name: Compile TypeScript
-        run: npm run build
-      - name: Run tests
-        run: 'npm test || echo "No tests defined, skipping"'
-        shell: bash
-        continue-on-error: true
-      - name: List compiled files
-        run: 'ls -la ${{ github.workspace }}/backend/dist || echo "Directory not found, check tsconfig.json outDir"'
-        shell: bash
-        continue-on-error: true
-      - name: Job status
-        run: 'echo "✅ Job status: ${{ job.status }}"'
-        shell: bash
 
-  build-and-test-frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./admin  # Frontend repo in admin folder
-    env:
-      NODE_VERSION: '20'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Verify package-lock.json
         run: 'test -f package-lock.json || echo "Warning: package-lock.json not found, caching may not work"'
         shell: bash
         continue-on-error: true
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+
       - name: Install dependencies
         run: npm ci
+
+      - name: TypeScript type check
+        run: npm run type-check || echo "No type-check script, skipping (Next.js build will check types)"
+        continue-on-error: true  # Optional, since Next.js build handles TS
+
       - name: Build Next.js
         run: npm run build
+
       - name: Run tests
         run: 'npm test || echo "No tests defined, skipping"'
         shell: bash
         continue-on-error: true
+
+      - name: List built files
+        run: 'ls -la .next || echo "Build directory not found, check next.config.js"'
+        shell: bash
+        continue-on-error: true
+
       - name: Job status
         run: 'echo "✅ Job status: ${{ job.status }}"'
         shell: bash
 
   deploy:
-    needs: [build-and-test-backend, build-and-test-frontend]
+    needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  # Deploy only on main branch pushes
     steps:
-      - name: Deploy backend to VPS
+      - name: Deploy to Contabo VPS
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_IP }}
-          username: deployuser
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd ~/app/native_delight/backend
-            git pull origin main
+            cd ~/app/native_delight/admin  # Adjust to your VPS app folder
+            git pull origin master
             npm ci
             npm run build
-            pm2 restart native-delight-server
-
-      - name: Deploy frontend to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: deployuser
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/app/native_delight/admin
-            git pull origin main
-            npm ci
-            npm run build
-            pm2 restart native-delight-admin
+            pm2 restart admin  # Adjust to your PM2 process name

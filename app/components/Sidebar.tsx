@@ -21,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePath }) => {
     { path: '/category', icon: Tags, label: 'Categories' },
     {path: '/subcategory', icon: Wrench, label: "Subcategories"},
     {path: '/banner', icon: Bandage, label: "Banner"}, 
+    {path: '/banner', icon: Bandage, label: "Banner"}, 
     { path: '/order', icon: ShoppingCart, label: 'Orders' },
     { path: '/user', icon: Users, label: 'Users' },
     // { path: '/setting', icon: Settings, label: 'Settings' },
