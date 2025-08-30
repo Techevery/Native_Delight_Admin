@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Home, ShoppingCart, Users, Utensils, Tags, Wrench,Bandage, Settings } from 'lucide-react';
+import { Home, ShoppingCart, Users, Utensils, Tags, Wrench,Bandage } from 'lucide-react';
 import Logout from '../components/Logout';
 import Link from 'next/link';
 import { useSelector } from 'react-redux';
