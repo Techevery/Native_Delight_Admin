@@ -4,17 +4,17 @@ run-name: Build and Deploy Frontend by ${{ github.actor }} 🚀
 on:
   push:
     branches:
-      - master  # Change to 'master' if your branch is named that
+      - master
   pull_request:
     branches:
-      - master  # Change to 'master' if your branch is named that
+      - master
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./  # Change to './admin' if Next.js is in a subfolder
+        working-directory: ./admin  # Matches your app in 'admin' subfolder
     env:
       NODE_VERSION: '20'
     steps:
@@ -37,7 +37,7 @@ jobs:
 
       - name: TypeScript type check
         run: npm run type-check || echo "No type-check script, skipping (Next.js build will check types)"
-        continue-on-error: true  # Optional, since Next.js build handles TS
+        continue-on-error: true
 
       - name: Build Next.js
         run: npm run build
@@ -59,7 +59,7 @@ jobs:
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Deploy only on main branch pushes
+    if: github.ref == 'refs/heads/master'  # Fixed to match 'master' branch
     steps:
       - name: Deploy to Contabo VPS
         uses: appleboy/ssh-action@master
@@ -68,8 +68,17 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd ~/app/native_delight/admin  # Adjust to your VPS app folder
-            git pull origin master
-            npm ci
-            npm run build
-            pm2 restart admin  # Adjust to your PM2 process name
+            echo "Starting deployment..."
+            cd ~/app/native_delight/admin || { echo "Failed to cd to ~/app/native_delight/admin"; exit 1; }
+            echo "Current directory: $(pwd)"
+            git fetch origin
+            git checkout master
+            git pull origin master || { echo "Git pull failed"; exit 1; }
+            echo "Git pull completed. Current commit: $(git rev-parse HEAD)"
+            npm ci || { echo "npm ci failed"; exit 1; }
+            npm run build || { echo "npm run build failed"; exit 1; }
+            echo "Build completed. Listing .next folder:"
+            ls -la .next
+            pm2 restart admin || { echo "PM2 restart failed"; exit 1; }
+            echo "Deployment completed successfully"
+            sudo systemctl restart nginx
