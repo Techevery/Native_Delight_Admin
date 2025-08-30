@@ -23,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePath }) => {
     {path: '/banner', icon: Bandage, label: "Banner"}, 
     { path: '/order', icon: ShoppingCart, label: 'Orders' },
     { path: '/user', icon: Users, label: 'Users' },
-    { path: '/setting', icon: Settings, label: 'Settings' },
+    // { path: '/setting', icon: Settings, label: 'Settings' },
   ];   
 
   return (
