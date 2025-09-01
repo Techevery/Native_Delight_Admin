@@ -116,6 +116,7 @@ const Banner = () => {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button>Add Banner Data</Button>
+              <h1>Helloo word</h1>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
