@@ -150,8 +150,8 @@ jobs:
           script: |
             echo "Starting deployment..."
             # Optional: Fix permissions if using root
-            sudo chown -R fevico:fevico /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
-            sudo chmod -R u+rwX /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
+            #sudo chown -R fevico:fevico /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
+            #sudo chmod -R u+rwX /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
             cd /home/fevico/app/native_delight/admin || { echo "Failed to cd to /home/fevico/app/native_delight/admin"; exit 1; }
             echo "Current directory: $(pwd)"
             git fetch origin || { echo "Git fetch failed"; exit 1; }
