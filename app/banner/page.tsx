@@ -115,7 +115,7 @@ const Banner = () => {
         <header className="flex justify-end mb-6 mx-5">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button>Add Banner Data</Button>
+              <Button>Add Banner jjj</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>

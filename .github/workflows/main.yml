@@ -78,7 +78,6 @@
 
 
 
-
 name: CI Pipeline for Native Delight Next.js Frontend
 run-name: Build and Deploy Frontend by ${{ github.actor }} 🚀
 
@@ -158,8 +157,7 @@ jobs:
             git checkout master || { echo "Git checkout failed"; exit 1; }
             git pull origin master || { echo "Git pull failed"; exit 1; }
             echo "Current commit: $(git rev-parse HEAD)"
-            # npm ci --legacy-peer-deps || { echo "npm ci failed"; exit 1; }
-            npm ci
+            npm ci || { echo "npm ci failed"; exit 1; }  # Removed --legacy-peer-deps if not needed; add back if required
             npm run build || { echo "Build failed"; exit 1; }
             echo "Built files:"
             ls -la .next
