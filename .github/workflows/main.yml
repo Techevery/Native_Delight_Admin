@@ -1,83 +1,3 @@
-# name: CI Pipeline for Native Delight Next.js Frontend
-# run-name: Build and Deploy Frontend by ${{ github.actor }} 🚀
-
-# on:
-#   push:
-#     branches:
-#       - master  # Change to 'master' if your branch is named that
-#   pull_request:
-#     branches:
-#       - master  # Change to 'master' if your branch is named that
-
-# jobs:
-#   build-and-test:
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: ./  # Change to './admin' if Next.js is in a subfolder
-#     env:
-#       NODE_VERSION: '20'
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-
-#       - name: Verify package-lock.json
-#         run: 'test -f package-lock.json || echo "Warning: package-lock.json not found, caching may not work"'
-#         shell: bash
-#         continue-on-error: true
-
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: ${{ env.NODE_VERSION }}
-#           cache: 'npm'
-
-#       - name: Install dependencies
-#         run: npm ci
-
-#       - name: TypeScript type check
-#         run: npm run type-check || echo "No type-check script, skipping (Next.js build will check types)"
-#         continue-on-error: true  # Optional, since Next.js build handles TS
-
-#       - name: Build Next.js
-#         run: npm run build
-
-#       - name: Run tests
-#         run: 'npm test || echo "No tests defined, skipping"'
-#         shell: bash
-#         continue-on-error: true
-
-#       - name: List built files
-#         run: 'ls -la .next || echo "Build directory not found, check next.config.js"'
-#         shell: bash
-#         continue-on-error: true
-
-#       - name: Job status
-#         run: 'echo "✅ Job status: ${{ job.status }}"'
-#         shell: bash
-
-#   deploy:
-#     needs: build-and-test
-#     runs-on: ubuntu-latest
-#     if: github.ref == 'refs/heads/main'  # Deploy only on main branch pushes
-#     steps:
-#       - name: Deploy to Contabo VPS
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.VPS_IP }}
-#           username: ${{ secrets.USERNAME }}
-#           password: ${{ secrets.SSH_PASSWORD }}
-#           script: |
-#             echo "Starting deployment..."
-#             cd ~/app/native_delight/admin  # Adjust to your VPS app folder
-#             git pull origin master
-#             npm ci
-#             npm run build
-#             pm2 restart admin  # Adjust to your PM2 process name
-#             sudo systemctl restart nginx
-
-
-
 name: CI Pipeline for Native Delight Next.js Frontend
 run-name: Build and Deploy Frontend by ${{ github.actor }} 🚀
 
@@ -148,16 +68,28 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             echo "Starting deployment..."
-            # Optional: Fix permissions if using root
-            #sudo chown -R fevico:fevico /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
-            #sudo chmod -R u+rwX /home/fevico/app/native_delight/admin || { echo "Failed to set permissions"; exit 1; }
+            # Fix Git ownership issue
+            git config --global --add safe.directory /home/fevico/app/native_delight/admin || { echo "Failed to set safe directory"; exit 1; }
+            # Set up Node.js with nvm
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] || curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20 || echo "Node.js 20 already installed"
+            nvm use 20
+            node -v
+            npm -v
+            # Set Git credentials
+            git config --global credential.helper store
+            echo "https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_PAT }}@github.com" > ~/.git-credentials
+            chmod 600 ~/.git-credentials
             cd /home/fevico/app/native_delight/admin || { echo "Failed to cd to /home/fevico/app/native_delight/admin"; exit 1; }
             echo "Current directory: $(pwd)"
+            git remote set-url origin https://github.com/Techevery/Native_Delight_Admin.git
             git fetch origin || { echo "Git fetch failed"; exit 1; }
             git checkout master || { echo "Git checkout failed"; exit 1; }
             git pull origin master || { echo "Git pull failed"; exit 1; }
             echo "Current commit: $(git rev-parse HEAD)"
-            npm ci || { echo "npm ci failed"; exit 1; }  # Removed --legacy-peer-deps if not needed; add back if required
+            npm ci --legacy-peer-deps || { echo "npm ci failed"; exit 1; }
             npm run build || { echo "Build failed"; exit 1; }
             echo "Built files:"
             ls -la .next
